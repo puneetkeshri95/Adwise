@@ -1,0 +1,32 @@
+.venv
+.env
+./backend/.env
+./venv
+./backend/.env.example
+
+node_modules
+.DS_Store
+.env
+dist
+dist/
+.env.old
+.env.example
+namyah.db
+
+# Python
+__pycache__/
+*.pyc
+
+# Local artifacts / private files
+*.tar.gz
+*.pem
+*.bak.*
+dev.log
+fix_and_migrate.sh
+check_db.py
+docx_dump.txt
+read_docx.py
+AdWise_Demo_Data_Spec.docx
+AdWise_UI_Dev_Checklist.docx
+adwise_ui_dev_checklist.docx
+

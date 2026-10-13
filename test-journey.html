@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Namyah — Full Journey + Razorpay Payment Test</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #7c3aed, #ec4899); padding: 12px 24px; text-align: center; font-size: 13px; font-weight: 600; color: white; }
+    .nav { background: #1a1d2e; border-bottom: 1px solid #2d3148; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .nav h1 { font-size: 20px; color: white; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-ok { background: #065f46; color: #6ee7b7; }
+    .badge-wait { background: #78350f; color: #fbbf24; }
+    .badge-err { background: #7f1d1d; color: #fca5a5; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 12px; padding: 20px; }
+    .card h3 { color: #a78bfa; font-size: 14px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; padding: 10px; border-radius: 8px; background: #0f1117; border: 1px solid #2d3148; }
+    .step-num { background: #7c3aed; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .step-num.done { background: #059669; }
+    .step-num.active { background: #d97706; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .step-body { flex: 1; }
+    .step-title { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .step-desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-purple { background: #7c3aed; color: white; }
+    .btn-green { background: #059669; color: white; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-amber { background: #d97706; color: white; }
+    .btn-red { background: #dc2626; color: white; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .input { padding: 8px 12px; border: 1px solid #2d3148; border-radius: 8px; background: #0f1117; color: #e2e8f0; font-size: 13px; width: 100%; }
+    .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .input-row .input { flex: 1; }
+    .console { background: #0a0c14; border: 1px solid #2d3148; border-radius: 12px; padding: 16px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11px; max-height: 400px; overflow-y: auto; line-height: 1.6; }
+    .log { padding: 3px 0; border-bottom: 1px solid #1a1d2e; }
+    .log .ts { color: #4b5563; }
+    .log .tag { font-weight: 700; padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+    .log .tag-track { background: #1e3a5f; color: #60a5fa; }
+    .log .tag-api { background: #1a3324; color: #6ee7b7; }
+    .log .tag-pay { background: #3b1764; color: #c084fc; }
+    .log .tag-err { background: #7f1d1d; color: #fca5a5; }
+    .log .tag-info { background: #1c1917; color: #fbbf24; }
+    .log .msg { color: #cbd5e1; }
+    .config-info { background: #0f1117; border: 1px solid #2d3148; border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 12px; }
+    .config-info code { background: #2d3148; padding: 2px 6px; border-radius: 4px; color: #a78bfa; font-size: 11px; }
+    .result-box { background: #0f1117; border: 1px solid #2d3148; border-radius: 8px; padding: 16px; margin-top: 12px; }
+    .result-box h4 { color: #6ee7b7; font-size: 12px; margin-bottom: 8px; }
+    .result-box pre { color: #94a3b8; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+    .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .summary-card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 8px; padding: 12px; text-align: center; }
+    .summary-card .val { font-size: 22px; font-weight: 700; color: white; }
+    .summary-card .lbl { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="header">🧪 FULL JOURNEY TEST — Simulates: Meta Ad Click → Page Views → Identify → Razorpay Payment → Webhook → Attribution</div>
+
+<div class="nav">
+  <h1>🛒 TestStore.in</h1>
+  <span class="badge badge-wait" id="pixelBadge">⏳ Pixel...</span>
+</div>
+
+<div class="container">
+
+  <!-- Summary counters -->
+  <div class="summary">
+    <div class="summary-card"><div class="val" id="cntEvents">0</div><div class="lbl">Events Sent</div></div>
+    <div class="summary-card"><div class="val" id="cntPages">0</div><div class="lbl">Page Views</div></div>
+    <div class="summary-card"><div class="val" id="cntIdentify">0</div><div class="lbl">Identified</div></div>
+    <div class="summary-card"><div class="val" id="cntPurchase">0</div><div class="lbl">Purchases</div></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Left: Journey Steps -->
+    <div>
+      <div class="card">
+        <h3>📍 Journey Steps (Run in Order)</h3>
+
+        <div class="step" id="step1">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Simulate Meta Ad Click (UTM + fbclid)</div>
+            <div class="step-desc">Reloads page with UTM params as if user clicked a Facebook ad</div>
+            <div class="controls">
+              <button class="btn btn-purple btn-sm" onclick="simulateAdClick()">🔗 Click Meta Ad</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step2">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Browse Pages (Track Page Views)</div>
+            <div class="step-desc">Simulates browsing multiple pages on the site</div>
+            <div class="controls">
+              <button class="btn btn-blue btn-sm" onclick="trackPage('/products')">Products Page</button>
+              <button class="btn btn-blue btn-sm" onclick="trackPage('/products/premium-watch')">Watch Detail</button>
+              <button class="btn btn-blue btn-sm" onclick="trackPage('/cart')">Cart Page</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step3">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Identify the Visitor (Email)</div>
+            <div class="step-desc">Visitor enters email at checkout — links anonymous session to identity</div>
+            <div class="input-row">
+              <input class="input" id="userEmail" value="testbuyer@example.com" placeholder="Email">
+              <input class="input" id="userName" value="Test Buyer" placeholder="Name">
+            </div>
+            <div class="controls">
+              <button class="btn btn-amber btn-sm" onclick="identifyUser()">👤 Identify</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step4">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Track Checkout Event</div>
+            <div class="step-desc">Pixel fires checkout event before payment</div>
+            <div class="controls">
+              <button class="btn btn-amber btn-sm" onclick="trackCheckoutEvent()">🛒 Checkout Event</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step5">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Pay with Razorpay (Real/Test)</div>
+            <div class="step-desc">Opens Razorpay checkout. Use test card: 4111 1111 1111 1111</div>
+            <div class="input-row">
+              <input class="input" id="payAmount" value="1999" placeholder="Amount (₹)" type="number">
+              <input class="input" id="razorpayKey" value="" placeholder="Razorpay Key ID (rzp_test_...)">
+            </div>
+            <div class="controls">
+              <button class="btn btn-green btn-sm" onclick="openRazorpay()">💳 Pay with Razorpay</button>
+              <button class="btn btn-red btn-sm" onclick="simulateWebhook()">⚡ Simulate Webhook (no Razorpay key needed)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step" id="step6">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">Verify Attribution</div>
+            <div class="step-desc">Check if the purchase got attributed to the Meta ad click</div>
+            <div class="controls">
+              <button class="btn btn-purple btn-sm" onclick="verifyAttribution()">🔍 Check Orders & Attribution</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config -->
+      <div class="card" style="margin-top: 20px;">
+        <h3>⚙️ Configuration</h3>
+        <div class="config-info">
+          <strong>Pixel ID:</strong> <code id="cfgPixel">pxl_vo0kG1fhb2PAmS</code><br>
+          <strong>API Base:</strong> <code id="cfgApi">http://localhost:8000</code><br>
+          <strong>Webhook URL:</strong> <code id="cfgWebhook">—</code>
+        </div>
+        <div class="input-row">
+          <input class="input" id="inputPixelId" value="pxl_vo0kG1fhb2PAmS" placeholder="Your Pixel ID">
+          <input class="input" id="inputApiBase" value="http://localhost:8000" placeholder="API Base URL">
+        </div>
+        <div class="controls">
+          <button class="btn btn-blue btn-sm" onclick="updateConfig()">Update Config</button>
+          <button class="btn btn-red btn-sm" onclick="clearLog()">Clear Log</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Event Console -->
+    <div>
+      <div class="card" style="height: 100%;">
+        <h3>📡 Event Log & API Responses</h3>
+        <div class="console" id="console"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Attribution Results -->
+  <div class="card" id="resultSection" style="display: none;">
+    <h3>✅ Attribution Verification Results</h3>
+    <div id="resultContent"></div>
+  </div>
+
+</div>
+
+<!-- Namyah Pixel Embed -->
+<script>
+!function(){var n=window.namyah=function(){(n.q=n.q||[]).push(arguments)};
+  var s=document.createElement("script");
+  s.src="http://localhost:8000/api/pixel/namyah.js?id=pxl_vo0kG1fhb2PAmS";
+  s.async=true;document.head.appendChild(s);
+}();
+namyah("init","pxl_vo0kG1fhb2PAmS");
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════════
+let PIXEL_ID = 'pxl_vo0kG1fhb2PAmS';
+let API_BASE = 'http://localhost:8000';
+let AUTH_TOKEN = localStorage.getItem('trackr_token') || '';
+let counters = { events: 0, pages: 0, identify: 0, purchase: 0 };
+
+const consoleEl = document.getElementById('console');
+
+function updateConfig() {
+  PIXEL_ID = document.getElementById('inputPixelId').value.trim();
+  API_BASE = document.getElementById('inputApiBase').value.trim().replace(/\/$/, '');
+  document.getElementById('cfgPixel').textContent = PIXEL_ID;
+  document.getElementById('cfgApi').textContent = API_BASE;
+  document.getElementById('cfgWebhook').textContent = `${API_BASE}/api/webhooks/razorpay?pixel_id=${PIXEL_ID}`;
+  log('info', `Config updated — Pixel: ${PIXEL_ID}, API: ${API_BASE}`);
+}
+
+function updateCounters() {
+  document.getElementById('cntEvents').textContent = counters.events;
+  document.getElementById('cntPages').textContent = counters.pages;
+  document.getElementById('cntIdentify').textContent = counters.identify;
+  document.getElementById('cntPurchase').textContent = counters.purchase;
+}
+
+// ═══════════════════════════════════════════════
+// LOGGING
+// ═══════════════════════════════════════════════
+function log(type, msg) {
+  const ts = new Date().toLocaleTimeString();
+  const tagClass = {track:'tag-track', api:'tag-api', pay:'tag-pay', err:'tag-err', info:'tag-info'}[type] || 'tag-info';
+  const entry = document.createElement('div');
+  entry.className = 'log';
+  entry.innerHTML = `<span class="ts">${ts}</span> <span class="tag ${tagClass}">${type.toUpperCase()}</span> <span class="msg">${msg}</span>`;
+  consoleEl.appendChild(entry);
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function clearLog() {
+  consoleEl.innerHTML = '';
+  log('info', 'Console cleared');
+}
+
+function markStep(n, status) {
+  const el = document.querySelector(`#step${n} .step-num`);
+  if (el) el.className = 'step-num ' + status;
+}
+
+// ═══════════════════════════════════════════════
+// STEP 1: Simulate Meta Ad Click
+// ═══════════════════════════════════════════════
+function simulateAdClick() {
+  const utms = new URLSearchParams({
+    utm_source: 'meta',
+    utm_medium: 'cpc',
+    utm_campaign: 'summer_sale_2026',
+    utm_content: '120210123456789',  // Simulated ad ID
+    utm_term: 'premium+watches',
+    fbclid: 'fb.1.' + Date.now() + '.AbC123XYZ',
+  });
+  log('info', '🔗 Redirecting with UTM params + fbclid (simulating Meta ad click)...');
+  window.location.href = window.location.pathname + '?' + utms.toString();
+}
+
+// ═══════════════════════════════════════════════
+// STEP 2: Track Page Views
+// ═══════════════════════════════════════════════
+function trackPage(pagePath) {
+  namyah('track', 'page_view', { page_url: pagePath, page_title: pagePath.split('/').pop() || 'Home' });
+  counters.events++; counters.pages++;
+  updateCounters();
+  markStep(2, 'done');
+  log('track', `page_view → ${pagePath}`);
+}
+
+// ═══════════════════════════════════════════════
+// STEP 3: Identify User
+// ═══════════════════════════════════════════════
+function identifyUser() {
+  const email = document.getElementById('userEmail').value.trim();
+  const name = document.getElementById('userName').value.trim();
+  if (!email) { log('err', 'Email required for identify'); return; }
+  namyah('identify', { email, name, phone: '+91-9876543210' });
+  counters.events++; counters.identify++;
+  updateCounters();
+  markStep(3, 'done');
+  log('track', `identify → ${email} (${name})`);
+}
+
+// ═══════════════════════════════════════════════
+// STEP 4: Checkout Event
+// ═══════════════════════════════════════════════
+function trackCheckoutEvent() {
+  const amount = parseInt(document.getElementById('payAmount').value) || 1999;
+  namyah('track', 'checkout', { value: amount, currency: 'INR', items: 1, product: 'Premium Watch' });
+  counters.events++;
+  updateCounters();
+  markStep(4, 'done');
+  log('track', `checkout → ₹${amount}`);
+}
+
+// ═══════════════════════════════════════════════
+// STEP 5A: Real Razorpay Checkout
+// ═══════════════════════════════════════════════
+function openRazorpay() {
+  const amount = parseInt(document.getElementById('payAmount').value) || 1999;
+  const key = document.getElementById('razorpayKey').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  const name = document.getElementById('userName').value.trim();
+
+  if (!key) {
+    log('err', 'Enter your Razorpay Key ID (rzp_test_...) — get it from Razorpay Dashboard → Settings → API Keys');
+    return;
+  }
+
+  log('pay', `Opening Razorpay checkout for ₹${amount}...`);
+  markStep(5, 'active');
+
+  const options = {
+    key: key,
+    amount: amount * 100, // paise
+    currency: 'INR',
+    name: 'TestStore.in',
+    description: 'Premium Watch — Test Purchase',
+    prefill: { name, email, contact: '9876543210' },
+    theme: { color: '#7c3aed' },
+    handler: function(response) {
+      log('pay', `✅ Payment Success! ID: ${response.razorpay_payment_id}`);
+      log('info', `Order ID: ${response.razorpay_order_id || 'N/A'}`);
+      log('info', 'ℹ️ Razorpay will now fire the webhook to your backend automatically.');
+      log('info', `Webhook URL: ${API_BASE}/api/webhooks/razorpay?pixel_id=${PIXEL_ID}`);
+      counters.purchase++;
+      updateCounters();
+      markStep(5, 'done');
+
+      // Also fire pixel purchase event
+      namyah('track', 'purchase', {
+        order_id: response.razorpay_order_id || response.razorpay_payment_id,
+        value: amount,
+        currency: 'INR',
+        payment_id: response.razorpay_payment_id,
+      });
+      counters.events++;
+      updateCounters();
+    },
+    modal: {
+      ondismiss: function() {
+        log('pay', '❌ Payment cancelled by user');
+        markStep(5, '');
+      }
+    }
+  };
+
+  try {
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(resp) {
+      log('err', `Payment failed: ${resp.error.description} (${resp.error.code})`);
+      markStep(5, '');
+    });
+    rzp.open();
+  } catch (e) {
+    log('err', `Razorpay error: ${e.message}`);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// STEP 5B: Simulate Webhook (no Razorpay key needed)
+// ═══════════════════════════════════════════════
+async function simulateWebhook() {
+  const amount = parseInt(document.getElementById('payAmount').value) || 1999;
+  const email = document.getElementById('userEmail').value.trim();
+  const orderId = 'order_test_' + Date.now();
+
+  log('pay', `⚡ Simulating Razorpay webhook → ₹${amount}, email: ${email}`);
+  markStep(5, 'active');
+
+  // This mimics what Razorpay sends to your webhook URL
+  const webhookPayload = {
+    event: "payment.captured",
+    payload: {
+      payment: {
+        entity: {
+          id: "pay_test_" + Date.now(),
+          order_id: orderId,
+          amount: amount * 100,  // paise
+          currency: "INR",
+          status: "captured",
+          method: "card",
+          email: email,
+          contact: "+919876543210",
+          description: "Premium Watch — Test Purchase",
+          created_at: Math.floor(Date.now() / 1000),
+        }
+      }
+    }
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/webhooks/razorpay?pixel_id=${PIXEL_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayload),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.status === 'ok') {
+      log('api', `✅ Webhook processed! Order: ${data.order_id}, Amount: ₹${data.amount}`);
+      counters.purchase++;
+      updateCounters();
+      markStep(5, 'done');
+    } else if (data.status === 'duplicate') {
+      log('info', `⚠️ Duplicate order (already exists): ${data.order_id}`);
+      markStep(5, 'done');
+    } else {
+      log('err', `Webhook response: ${JSON.stringify(data)}`);
+    }
+  } catch (e) {
+    log('err', `Webhook request failed: ${e.message}`);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// STEP 6: Verify Attribution
+// ═══════════════════════════════════════════════
+async function verifyAttribution() {
+  if (!AUTH_TOKEN) {
+    AUTH_TOKEN = prompt('Enter your JWT token (from localStorage "trackr_token"):');
+    if (!AUTH_TOKEN) { log('err', 'Need JWT token to query API'); return; }
+  }
+
+  markStep(6, 'active');
+  log('api', 'Fetching conversions & journeys...');
+
+  const headers = { 'Authorization': 'Bearer ' + AUTH_TOKEN, 'Content-Type': 'application/json' };
+  const resultSection = document.getElementById('resultSection');
+  const resultContent = document.getElementById('resultContent');
+
+  try {
+    // Fetch conversions
+    const convRes = await fetch(`${API_BASE}/api/conversions`, { headers });
+    const conversions = convRes.ok ? await convRes.json() : [];
+
+    // Fetch journeys
+    const journeyRes = await fetch(`${API_BASE}/api/journeys`, { headers });
+    const journeys = journeyRes.ok ? await journeyRes.json() : [];
+
+    // Fetch KPIs
+    const kpiRes = await fetch(`${API_BASE}/api/dashboard/kpis`, { headers });
+    const kpis = kpiRes.ok ? await kpiRes.json() : {};
+
+    resultSection.style.display = 'block';
+    resultContent.innerHTML = '';
+
+    // KPIs
+    const kpiBox = document.createElement('div');
+    kpiBox.className = 'result-box';
+    kpiBox.innerHTML = `<h4>📊 Dashboard KPIs</h4><pre>${JSON.stringify(kpis, null, 2)}</pre>`;
+    resultContent.appendChild(kpiBox);
+
+    // Recent conversions
+    const convBox = document.createElement('div');
+    convBox.className = 'result-box';
+    const recentConv = Array.isArray(conversions) ? conversions.slice(0, 5) : (conversions.orders || []).slice(0, 5);
+    convBox.innerHTML = `<h4>🛒 Recent Conversions (last 5)</h4><pre>${JSON.stringify(recentConv, null, 2)}</pre>`;
+    resultContent.appendChild(convBox);
+
+    // Recent journeys
+    const jrnBox = document.createElement('div');
+    jrnBox.className = 'result-box';
+    const recentJrn = Array.isArray(journeys) ? journeys.slice(0, 3) : (journeys.visitors || []).slice(0, 3);
+    jrnBox.innerHTML = `<h4>🗺️ Recent Visitor Journeys (last 3)</h4><pre>${JSON.stringify(recentJrn, null, 2)}</pre>`;
+    resultContent.appendChild(jrnBox);
+
+    markStep(6, 'done');
+    log('api', `✅ Found ${recentConv.length} conversions, ${recentJrn.length} journeys`);
+
+    // Check attribution on latest conversion
+    if (recentConv.length > 0) {
+      const latest = recentConv[0];
+      const hasUtm = latest.utm_source || latest.utm_campaign;
+      if (hasUtm) {
+        log('api', `🎯 Attribution confirmed! Source: ${latest.utm_source}, Campaign: ${latest.utm_campaign}, Content: ${latest.utm_content}`);
+      } else {
+        log('info', '⚠️ Latest conversion has no UTM — visitor may not have been identified before webhook');
+      }
+    }
+
+  } catch (e) {
+    log('err', `Verification failed: ${e.message}`);
+    markStep(6, '');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+(function init() {
+  // Show UTM info if present
+  const params = new URLSearchParams(window.location.search);
+  const utmKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'];
+  const found = [];
+  utmKeys.forEach(k => { const v = params.get(k); if (v) found.push(k + '=' + v); });
+
+  if (found.length) {
+    log('info', '✅ UTM params detected: ' + found.join(', '));
+    markStep(1, 'done');
+  }
+
+  // Update webhook URL display
+  document.getElementById('cfgWebhook').textContent = `${API_BASE}/api/webhooks/razorpay?pixel_id=${PIXEL_ID}`;
+
+  // Monitor pixel ready
+  const check = setInterval(() => {
+    if (typeof window.namyah === 'function' && !window.namyah.q) {
+      document.getElementById('pixelBadge').textContent = '✅ Pixel Active';
+      document.getElementById('pixelBadge').className = 'badge badge-ok';
+      log('info', '✅ Namyah pixel loaded and active');
+      clearInterval(check);
+    }
+  }, 300);
+
+  setTimeout(() => {
+    if (document.getElementById('pixelBadge').className.includes('wait')) {
+      document.getElementById('pixelBadge').textContent = '❌ Pixel Failed';
+      document.getElementById('pixelBadge').className = 'badge badge-err';
+      log('err', 'Pixel failed to load — is the backend running on ' + API_BASE + '?');
+      clearInterval(check);
+    }
+  }, 5000);
+
+  // Intercept fetch to log all /api/ calls
+  const origFetch = window.fetch;
+  window.fetch = function(url, opts) {
+    if (typeof url === 'string' && url.includes('/api/track')) {
+      const body = opts && opts.body ? JSON.parse(opts.body) : {};
+      log('track', `→ ${body.event_name || 'unknown'} ${JSON.stringify(body.properties || {}).substring(0, 80)}`);
+      return origFetch.apply(this, arguments).then(res => {
+        res.clone().json().then(j => log('api', `← ${res.status} ${JSON.stringify(j).substring(0, 100)}`)).catch(() => {});
+        return res;
+      });
+    }
+    return origFetch.apply(this, arguments);
+  };
+
+  log('info', '🚀 Test page ready. Run steps 1-6 in order to test full journey + attribution.');
+  if (AUTH_TOKEN) log('info', '🔑 JWT token found in localStorage');
+  else log('info', '⚠️ No JWT token — step 6 will prompt for one');
+})();
+</script>
+
+</body>
+</html>

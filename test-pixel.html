@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Namyah Pixel Test — Fake Advertiser Store</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f8f9fa; color: #1a1a2e; }
+    .banner { background: #e74c3c; color: white; text-align: center; padding: 6px; font-size: 13px; }
+    nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    nav h1 { font-size: 22px; }
+    .container { max-width: 960px; margin: 32px auto; padding: 0 16px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card img { width: 100%; height: 200px; object-fit: cover; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 48px; line-height: 200px; text-align: center; }
+    .card-body { padding: 16px; }
+    .card-body h3 { margin-bottom: 4px; }
+    .card-body .price { color: #e74c3c; font-weight: 700; font-size: 18px; margin-bottom: 12px; }
+    .btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: #6c5ce7; color: white; }
+    .btn-success { background: #00b894; color: white; }
+    .btn-warning { background: #fdcb6e; color: #1a1a2e; }
+    .btn + .btn { margin-left: 8px; }
+    .console { background: #1a1a2e; color: #00ff88; border-radius: 12px; padding: 20px; margin-top: 32px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 300px; overflow-y: auto; }
+    .console h3 { color: #a29bfe; margin-bottom: 12px; font-family: system-ui; }
+    .console .log-entry { padding: 4px 0; border-bottom: 1px solid #2d2d4e; }
+    .console .log-entry .time { color: #636e72; }
+    .console .log-entry .type { color: #fdcb6e; font-weight: bold; }
+    .actions { background: white; border-radius: 12px; padding: 24px; margin-top: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .actions h3 { margin-bottom: 16px; }
+    .actions .btn { margin: 4px; }
+    .form-row { display: flex; gap: 12px; margin-top: 12px; align-items: end; }
+    .form-row input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; flex: 1; }
+    .status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status.connected { background: #d4edda; color: #155724; }
+    .status.waiting { background: #fff3cd; color: #856404; }
+    .utm-info { background: #dfe6e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; }
+    .utm-info code { background: #b2bec3; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="banner">🧪 TEST PAGE — Simulates an advertiser's e-commerce store with Namyah Pixel embedded</div>
+
+  <nav>
+    <h1>🛍️ FakeStore.in</h1>
+    <span class="status waiting" id="pixelStatus">⏳ Pixel loading...</span>
+  </nav>
+
+  <div class="container">
+    <div class="utm-info" id="utmInfo">
+      <strong>Current URL:</strong> <span id="currentUrl"></span><br>
+      <strong>UTM params:</strong> <span id="utmParams">None detected</span>
+    </div>
+
+    <div class="products">
+      <div class="card">
+        <div style="width:100%;height:200px;background:#dfe6e9;display:flex;align-items:center;justify-content:center;font-size:48px;">👕</div>
+        <div class="card-body">
+          <h3>Classic Blue T-Shirt</h3>
+          <div class="price">₹1,299</div>
+          <button class="btn btn-primary" onclick="trackViewContent('tshirt-001', 'Classic Blue T-Shirt', 1299)">View Product</button>
+          <button class="btn btn-warning" onclick="trackAddToCart('tshirt-001', 'Classic Blue T-Shirt', 1299)">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="width:100%;height:200px;background:#ffeaa7;display:flex;align-items:center;justify-content:center;font-size:48px;">👗</div>
+        <div class="card-body">
+          <h3>Summer Floral Dress</h3>
+          <div class="price">₹2,499</div>
+          <button class="btn btn-primary" onclick="trackViewContent('dress-002', 'Summer Floral Dress', 2499)">View Product</button>
+          <button class="btn btn-warning" onclick="trackAddToCart('dress-002', 'Summer Floral Dress', 2499)">Add to Cart</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="width:100%;height:200px;background:#fab1a0;display:flex;align-items:center;justify-content:center;font-size:48px;">👟</div>
+        <div class="card-body">
+          <h3>Running Shoes Pro</h3>
+          <div class="price">₹4,999</div>
+          <button class="btn btn-primary" onclick="trackViewContent('shoes-003', 'Running Shoes Pro', 4999)">View Product</button>
+          <button class="btn btn-warning" onclick="trackAddToCart('shoes-003', 'Running Shoes Pro', 4999)">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <h3>🎯 Pixel Test Actions</h3>
+
+      <div style="margin-bottom: 16px;">
+        <strong>Standard Events:</strong><br>
+        <button class="btn btn-primary" onclick="trackPageView()">Track PageView</button>
+        <button class="btn btn-warning" onclick="trackCheckout()">Initiate Checkout (₹3,798)</button>
+        <button class="btn btn-success" onclick="trackPurchase()">Complete Purchase (₹3,798)</button>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <strong>Identify User:</strong>
+        <div class="form-row">
+          <input type="email" id="identEmail" placeholder="Email" value="shopper@example.com">
+          <input type="text" id="identName" placeholder="Name" value="Test Shopper">
+          <button class="btn btn-primary" onclick="trackIdentify()">Identify</button>
+        </div>
+      </div>
+
+      <div>
+        <strong>Custom Event:</strong>
+        <div class="form-row">
+          <input type="text" id="customEvent" placeholder="Event name" value="Newsletter_Signup">
+          <button class="btn btn-primary" onclick="trackCustom()">Send Custom Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test URLs -->
+    <div class="actions" style="margin-top: 16px;">
+      <h3>🔗 Test with UTM Parameters</h3>
+      <p style="font-size: 13px; margin-bottom: 12px; color: #636e72;">Click these links to simulate ad clicks with UTM tracking:</p>
+      <a class="btn btn-primary" href="?utm_source=meta&utm_medium=cpc&utm_campaign=summer_sale&utm_content=carousel_ad&fbclid=fb_click_123">Meta Ad Click</a>
+      <a class="btn btn-primary" href="?utm_source=google&utm_medium=cpc&utm_campaign=brand_search&gclid=gclid_abc_456">Google Ad Click</a>
+      <a class="btn btn-primary" href="?utm_source=instagram&utm_medium=social&utm_campaign=influencer_promo">Instagram Organic</a>
+      <a class="btn btn-warning" href="?">Clear UTMs (Direct Visit)</a>
+    </div>
+
+    <!-- Console -->
+    <div class="console" id="console">
+      <h3>📡 Pixel Event Log</h3>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- NAMYAH PIXEL EMBED — same as advertiser would use -->
+  <!-- ══════════════════════════════════════════════ -->
+  <script>
+  !function(){var n=window.namyah=function(){(n.q=n.q||[]).push(arguments)};
+    var s=document.createElement("script");
+    s.src="http://localhost:8000/api/pixel/namyah.js?id=pxl_vo0kG1fhb2PAmS";
+    s.async=true;document.head.appendChild(s);
+  }();
+  namyah("init","pxl_vo0kG1fhb2PAmS");
+</script>
+  <script>
+    // ── Display helpers ──
+    var consoleEl = document.getElementById('console');
+
+    function log(type, detail) {
+      var now = new Date().toLocaleTimeString();
+      var entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = '<span class="time">' + now + '</span>  <span class="type">[' + type + ']</span>  ' + detail;
+      consoleEl.appendChild(entry);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    // Show URL + UTMs
+    document.getElementById('currentUrl').textContent = window.location.href;
+    document.getElementById('pixelStatus').title = 'Sending events to tenant_id = ' + __PIXEL_ID;
+    var params = new URLSearchParams(window.location.search);
+    var utmKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid'];
+    var found = [];
+    utmKeys.forEach(function(k) {
+      var v = params.get(k);
+      if (v) found.push('<code>' + k + '=' + v + '</code>');
+    });
+    if (found.length) document.getElementById('utmParams').innerHTML = found.join(' &nbsp; ');
+
+    // Monitor pixel init
+    var checkInterval = setInterval(function() {
+      if (typeof window.namyah === 'function' && window.namyah.q === undefined) {
+        document.getElementById('pixelStatus').textContent = '✅ Pixel active · tenant=' + __PIXEL_ID;
+        document.getElementById('pixelStatus').className = 'status connected';
+        log('INIT', 'Pixel initialized — sending to tenant_id=' + __PIXEL_ID);
+        clearInterval(checkInterval);
+      }
+    }, 200);
+
+    // Intercept fetch to log pixel calls (the SDK posts to /api/track)
+    var origFetch = window.fetch;
+    window.fetch = function(url, opts) {
+      if (typeof url === 'string' && url.indexOf('/api/track') !== -1) {
+        var body = opts && opts.body ? JSON.parse(opts.body) : {};
+        log('→ TRACK', body.event_name + ' · ' + JSON.stringify(body.properties||{}));
+        return origFetch.apply(this, arguments).then(function(res) {
+          return res.clone().json().then(function(json) {
+            log('← TRACK', JSON.stringify(json));
+            return res;
+          }).catch(function() { return res; });
+        });
+      }
+      return origFetch.apply(this, arguments);
+    };
+
+    // ── Event trigger functions (use new lowercase event names) ──
+    function trackPageView() {
+      namyah('track', 'page_view');
+      log('USER', 'Tracked page_view');
+    }
+
+    function trackViewContent(id, name, price) {
+      namyah('track', 'view_product', { product_id: id, product_name: name, value: price, currency: 'INR' });
+      log('USER', 'Viewed: ' + name + ' (₹' + price + ')');
+    }
+
+    function trackAddToCart(id, name, price) {
+      namyah('track', 'add_to_cart', { product_id: id, product_name: name, value: price, currency: 'INR' });
+      log('USER', 'Added to cart: ' + name);
+    }
+
+    function trackCheckout() {
+      namyah('track', 'checkout', { value: 3798, currency: 'INR', items: 2 });
+      log('USER', 'Initiated checkout — ₹3,798');
+    }
+
+    function trackPurchase() {
+      var orderId = 'order_' + Date.now();
+      namyah('track', 'purchase', { order_id: orderId, value: 3798, currency: 'INR', items: 2 });
+      log('USER', '🎉 Purchase completed — ' + orderId + ' — ₹3,798');
+    }
+
+    function trackIdentify() {
+      var email = document.getElementById('identEmail').value;
+      var name = document.getElementById('identName').value;
+      namyah('identify', { email: email, name: name });
+      log('USER', 'Identified as: ' + name + ' (' + email + ')');
+    }
+
+    function trackCustom() {
+      var evt = document.getElementById('customEvent').value;
+      namyah('track', evt, { custom: true });
+      log('USER', 'Custom event: ' + evt);
+    }
+
+    log('BOOT', 'Test page loaded — pixel embed snippet injected');
+  </script>
+
+</body>
+</html>
